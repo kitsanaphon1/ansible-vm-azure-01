@@ -15,10 +15,12 @@ pipeline {
 
     stage('Run Ansible Playbook') {
       steps {
-        sh '''
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/ansible_azure boo@4.194.250.173 \
-            "ansible-playbook ~/ansible/playbooks/test-playbook.yml"
-        '''
+        sshagent(['ansible-azure-key']) {
+          sh '''
+            ssh -o StrictHostKeyChecking=no boo@4.194.250.173 \
+              "ansible-playbook ~/ansible/playbooks/test-playbook.yml"
+          '''
+        }
       }
     }
   }
