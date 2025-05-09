@@ -7,7 +7,7 @@ pipeline {
                 dir('/home/solo') { // 🔁 เปลี่ยนเป็น path ที่ไฟล์ .yaml อยู่จริง
                     sh '''
                         source ~/ansible-azure-env/bin/activate
-                        ansible-playbook create-linux-vm.yaml
+                        ansible-playbook create-linux-vm-01.yaml
                     '''
                 }
             }
