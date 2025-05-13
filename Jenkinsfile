@@ -7,7 +7,7 @@ pipeline {
                 sh '''
                     set -ex
                     . ~/ansible-azure-env/bin/activate
-                    ansible-playbook /home/solo/create-linux-vm-01.yaml
+                    ansible-playbook playbooks/create-linux-vm-01.yaml
                 '''
             }
         }
