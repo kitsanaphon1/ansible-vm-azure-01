@@ -19,12 +19,11 @@
         address_prefix: "10.10.1.0/24"
         state: present
 
-    - name: "Create new public IP (Fixed)"
+    - name: "Create new public IP (Static)"
       azure_rm_publicipaddress:
         name: pipDockerDemo01
         resource_group: rgUbuntuSoutheastAsia
-        allocation_method: Static
-        public_ip_address: 20.100.50.123  # <--- ใช้ IP นี้แบบฟิก
+        allocation_method: Static     # ✅ ใช้แบบ static ไม่ต้องระบุ IP ตรง
         state: present
 
     - name: "Create new NIC (Fixed private IP optional)"
