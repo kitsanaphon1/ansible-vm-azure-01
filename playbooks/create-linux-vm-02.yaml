@@ -1,6 +1,9 @@
 - name: "Create Ubuntu 20.04 VM with Docker (fixed public IP)"
   hosts: localhost
   connection: local
+  collections:
+    - azure.azcollection
+
   tasks:
 
     - name: "Ensure virtual network exists (shared)"
