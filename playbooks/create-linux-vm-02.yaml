@@ -10,6 +10,7 @@
         address_prefixes: "10.10.0.0/16"
         location: southeastasia
         state: present
+        auth_source: env
 
     - name: "Create new subnet"
       azure_rm_subnet:
@@ -18,13 +19,15 @@
         virtual_network: vnetDockerDemo
         address_prefix: "10.10.1.0/24"
         state: present
+        auth_source: env
 
     - name: "Create new public IP (Static)"
       azure_rm_publicipaddress:
         name: pipDockerDemo01
         resource_group: rgUbuntuSoutheastAsia
-        allocation_method: Static     # ✅ ใช้แบบ static ไม่ต้องระบุ IP ตรง
+        allocation_method: Static
         state: present
+        auth_source: env
 
     - name: "Create new NIC (Fixed private IP optional)"
       azure_rm_networkinterface:
@@ -33,12 +36,8 @@
         virtual_network: vnetDockerDemo
         subnet: subnetDockerDemo01
         public_ip_name: pipDockerDemo01
-        # ถ้าต้องการฟิก private IP เพิ่ม:
-        # ip_configurations:
-        #   - name: ipconfig1
-        #     private_ip_address: 10.10.1.100
-        #     private_ip_allocation_method: Static
         state: present
+        auth_source: env
 
     - name: "Create new VM with Docker installed"
       azure_rm_virtualmachine:
@@ -65,4 +64,5 @@
           curl -fsSL https://get.docker.com -o get-docker.sh
           sh get-docker.sh
           usermod -aG docker azureuser
-        state: present  
+        state: present
+        auth_source: env
