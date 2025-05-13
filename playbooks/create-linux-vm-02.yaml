@@ -23,21 +23,38 @@
       azure_rm_publicipaddress:
         name: pipDockerDemo01
         resource_group: rgUbuntuSoutheastAsia
-        allocation_method: Static     # ✅ ใช้แบบ static ไม่ต้องระบุ IP ตรง
+        allocation_method: Static
         state: present
 
-    - name: "Create new NIC (Fixed private IP optional)"
+    - name: "Create Network Security Group"
+      azure_rm_networksecuritygroup:
+        name: nsgDockerDemo01
+        resource_group: rgUbuntuSoutheastAsia
+        location: southeastasia
+        state: present
+
+    - name: "Allow HTTP (port 80) from Internet"
+      azure_rm_securityrule:
+        name: AllowHTTP
+        resource_group: rgUbuntuSoutheastAsia
+        security_group_name: nsgDockerDemo01
+        access: Allow
+        direction: Inbound
+        protocol: Tcp
+        priority: 1001
+        source_address_prefix: "*"
+        source_port_range: "*"
+        destination_address_prefix: "*"
+        destination_port_range: "80"
+
+    - name: "Create new NIC (with NSG)"
       azure_rm_networkinterface:
         name: nicDockerDemo01
         resource_group: rgUbuntuSoutheastAsia
         virtual_network: vnetDockerDemo
         subnet: subnetDockerDemo01
         public_ip_name: pipDockerDemo01
-        # ถ้าต้องการฟิก private IP เพิ่ม:
-        # ip_configurations:
-        #   - name: ipconfig1
-        #     private_ip_address: 10.10.1.100
-        #     private_ip_allocation_method: Static
+        network_security_group: nsgDockerDemo01
         state: present
 
     - name: "Create new VM with Docker installed"
