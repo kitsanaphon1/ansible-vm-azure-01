@@ -25,6 +25,46 @@ pipeline {
       }
     }
 
-    // ...สามารถเพิ่ม stage อื่น ๆ ตามหลังได้เลย เช่น Open Port, Get IP, Verify Docker
+    stage('Open Port 8080') {
+      steps {
+        sh '''
+          set -ex
+          az network nsg rule create \
+            --resource-group rgUbuntuSoutheastAsia \
+            --nsg-name nicDockerDemo01 \
+            --name AllowHTTP \
+            --protocol Tcp \
+            --direction Inbound \
+            --priority 1002 \
+            --source-address-prefix '*' \
+            --source-port-range '*' \
+            --destination-address-prefix '*' \
+            --destination-port-range 8080 \
+            --access Allow || true
+        '''
+      }
+    }
+
+    stage('Get Public IP') {
+      steps {
+        sh '''
+          set -ex
+          . $ANSIBLE_ENV_PATH/bin/activate
+          ansible-playbook playbooks/get-vm-ip.yaml -e "output_file=vm_ip.txt"
+        '''
+      }
+    }
+
+    stage('Verify Docker on VM') {
+      steps {
+        sh '''
+          set -ex
+          . $ANSIBLE_ENV_PATH/bin/activate
+          ansible-playbook -i "$(cat vm_ip.txt)," \
+            -u azureuser --private-key ${SSH_KEY} \
+            playbooks/verify-docker.yaml
+        '''
+      }
+    }
   }
 }
