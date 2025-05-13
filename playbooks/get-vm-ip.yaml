@@ -12,5 +12,4 @@
     - name: Save public IP to file
       copy:
         content: "{{ pip_info.publicipaddresses[0].ip_address }}"
-        dest: "vm_ip.txt"
-      when: pip_info.publicipaddresses is defined and pip_info.publicipaddresses | length > 0
+        dest: "{{ lookup('env', 'WORKSPACE') }}/vm_ip.txt"
