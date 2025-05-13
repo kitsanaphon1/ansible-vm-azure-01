@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         SSH_KEY = "~/.ssh/id_rsa"
+        ANSIBLE_HOST_KEY_CHECKING = "False"  // ✅ เพิ่มตัวนี้
     }
 
     stages {
@@ -34,6 +35,7 @@ pipeline {
         stage('Verify Docker on VM') {
             steps {
                 sh '''
+                    set -ex
                     . ~/ansible-azure-env/bin/activate
                     ansible-playbook -i "$(cat vm_ip.txt)," \
                         -u azureuser --private-key ${SSH_KEY} \
