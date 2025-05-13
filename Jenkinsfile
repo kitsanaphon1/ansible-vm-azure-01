@@ -25,21 +25,21 @@ pipeline {
       }
     }
 
-    stage('Open Port 8080') {
+    stage('Open Port 8082') {
       steps {
         sh '''
           set -ex
           az network nsg rule create \
             --resource-group rgUbuntuSoutheastAsia \
             --nsg-name nicDockerDemo01 \
-            --name AllowHTTP \
+            --name AllowHTTP8081 \
             --protocol Tcp \
             --direction Inbound \
-            --priority 1002 \
+            --priority 1004 \
             --source-address-prefix '*' \
             --source-port-range '*' \
             --destination-address-prefix '*' \
-            --destination-port-range 8080 \
+            --destination-port-range 8082 \
             --access Allow || true
         '''
       }
