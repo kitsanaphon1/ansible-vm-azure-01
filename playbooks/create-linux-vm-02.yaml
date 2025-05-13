@@ -6,7 +6,7 @@
     - name: "Ensure virtual network exists (shared)"
       azure_rm_virtualnetwork:
         name: vnetDockerDemo
-        resource_group: rgDockerDemo
+        resource_group: rgUbuntuSoutheastAsia
         address_prefixes: "10.10.0.0/16"
         location: southeastasia
         state: present
