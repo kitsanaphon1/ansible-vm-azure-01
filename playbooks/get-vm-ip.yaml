@@ -1,0 +1,14 @@
+- name: Get public IP of VM
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Get public IP info
+      azure_rm_publicipaddress_info:
+        resource_group: rgDockerDemo
+        name: pipDockerDemo01
+      register: pip_info
+
+    - name: Save public IP to file
+      copy:
+        content: "{{ pip_info.azure_publicipaddresses[0].ip_address }}"
+        dest: "vm_ip.txt"

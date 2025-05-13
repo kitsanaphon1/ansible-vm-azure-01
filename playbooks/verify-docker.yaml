@@ -1,0 +1,17 @@
+- name: Check Docker installation on VM
+  hosts: all
+  become: true
+  gather_facts: no
+  tasks:
+    - name: Wait for SSH
+      wait_for_connection:
+        timeout: 300
+
+    - name: Check Docker version
+      command: docker --version
+      register: docker_result
+      ignore_errors: yes
+
+    - name: Show Docker version
+      debug:
+        var: docker_result.stdout
