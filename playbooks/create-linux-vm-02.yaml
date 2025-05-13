@@ -14,7 +14,7 @@
     - name: "Create new subnet"
       azure_rm_subnet:
         name: subnetDockerDemo01
-        resource_group: rgDockerDemo
+        resource_group: rgUbuntuSoutheastAsia
         virtual_network: vnetDockerDemo
         address_prefix: "10.10.1.0/24"
         state: present
@@ -22,19 +22,19 @@
     - name: "Create new public IP (Fixed)"
       azure_rm_publicipaddress:
         name: pipDockerDemo01
-        resource_group: rgDockerDemo
+        resource_group: rgUbuntuSoutheastAsia
         allocation_method: Static
-        public_ip_address: 20.100.50.123   # <--- ฟิก IP ตรงนี้
+        public_ip_address: 20.100.50.123  # <--- ใช้ IP นี้แบบฟิก
         state: present
 
     - name: "Create new NIC (Fixed private IP optional)"
       azure_rm_networkinterface:
         name: nicDockerDemo01
-        resource_group: rgDockerDemo
+        resource_group: rgUbuntuSoutheastAsia
         virtual_network: vnetDockerDemo
         subnet: subnetDockerDemo01
         public_ip_name: pipDockerDemo01
-        # ถ้าอยากฟิก private IP ด้วยให้เพิ่ม:
+        # ถ้าต้องการฟิก private IP เพิ่ม:
         # ip_configurations:
         #   - name: ipconfig1
         #     private_ip_address: 10.10.1.100
@@ -43,8 +43,8 @@
 
     - name: "Create new VM with Docker installed"
       azure_rm_virtualmachine:
-        name: vmDockerDemo01                        # <--- เปลี่ยนชื่อ VM ตรงนี้
-        resource_group: rgDockerDemo
+        name: vmDockerDemo01
+        resource_group: rgUbuntuSoutheastAsia
         location: southeastasia
         vm_size: Standard_B1s
         admin_username: azureuser
