@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         SSH_KEY = "~/.ssh/id_rsa"
+        ANSIBLE_ENV_PATH = "/home/jenkins/ansible-azure-env"
         ANSIBLE_HOST_KEY_CHECKING = "False"  // ✅ ปิด host key checking
     }
 
@@ -11,7 +12,7 @@ pipeline {
             steps {
                 sh '''
                     set -ex
-                    . /var/lib/jenkins/ansible-azure-env/bin/activate
+                    . $ANSIBLE_ENV_PATH/bin/activate
                     ansible-playbook playbooks/create-linux-vm-02.yaml
                 '''
             }
@@ -43,7 +44,7 @@ pipeline {
                     def ip_output = sh(
                         script: '''
                         set -ex
-                        . /var/lib/jenkins/ansible-azure-env/bin/activate
+                        . $ANSIBLE_ENV_PATH/bin/activate
                         ansible-playbook playbooks/get-vm-ip.yaml -e "output_file=vm_ip.txt"
                         ''',
                         returnStdout: true
@@ -57,7 +58,7 @@ pipeline {
             steps {
                 sh '''
                     set -ex
-                    . /var/lib/jenkins/ansible-azure-env/bin/activate
+                    . $ANSIBLE_ENV_PATH/bin/activate
                     ansible-playbook -i "$(cat vm_ip.txt)," \
                         -u azureuser --private-key ${SSH_KEY} \
                         playbooks/verify-docker.yaml
