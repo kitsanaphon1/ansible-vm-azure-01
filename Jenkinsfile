@@ -11,7 +11,7 @@ pipeline {
             steps {
                 sh '''
                     set -ex
-                    . ~/ansible-azure-env/bin/activate
+                    . /var/lib/jenkins/ansible-azure-env/bin/activate
                     ansible-playbook playbooks/create-linux-vm-02.yaml
                 '''
             }
@@ -42,7 +42,8 @@ pipeline {
                 script {
                     def ip_output = sh(
                         script: '''
-                        . ~/ansible-azure-env/bin/activate
+                        set -ex
+                        . /var/lib/jenkins/ansible-azure-env/bin/activate
                         ansible-playbook playbooks/get-vm-ip.yaml -e "output_file=vm_ip.txt"
                         ''',
                         returnStdout: true
@@ -56,7 +57,7 @@ pipeline {
             steps {
                 sh '''
                     set -ex
-                    . ~/ansible-azure-env/bin/activate
+                    . /var/lib/jenkins/ansible-azure-env/bin/activate
                     ansible-playbook -i "$(cat vm_ip.txt)," \
                         -u azureuser --private-key ${SSH_KEY} \
                         playbooks/verify-docker.yaml
