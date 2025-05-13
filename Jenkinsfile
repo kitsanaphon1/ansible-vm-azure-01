@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         SSH_KEY = "~/.ssh/id_rsa"
-        ANSIBLE_ENV_PATH = "/home/jenkins/ansible-azure-env"
+        ANSIBLE_ENV_PATH = "/var/lib/jenkins/ansible-azure-env"
         ANSIBLE_HOST_KEY_CHECKING = "False"  // ✅ ปิด host key checking
     }
 
