@@ -2,13 +2,19 @@
   hosts: localhost
   gather_facts: no
   tasks:
+
     - name: Get public IP info
       azure_rm_publicipaddress_info:
-        resource_group: rgDockerDemo
+        resource_group: rgUbuntuSoutheastAsia         # ✅ แก้ตรงนี้
         name: pipDockerDemo01
       register: pip_info
 
+    - name: Show IP object (debug เผื่อดู structure)
+      debug:
+        var: pip_info
+
     - name: Save public IP to file
       copy:
-        content: "{{ pip_info.azure_publicipaddresses[0].ip_address }}"
+        content: "{{ pip_info.azure_rm_publicipaddresses[0].ip_address }}"
         dest: "vm_ip.txt"
+      when: pip_info.azure_rm_publicipaddresses is defined and pip_info.azure_rm_publicipaddresses | length > 0
