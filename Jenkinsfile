@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         SSH_KEY = "~/.ssh/id_rsa"
-        ANSIBLE_HOST_KEY_CHECKING = "False"  // ✅ เพิ่มตัวนี้
+        ANSIBLE_HOST_KEY_CHECKING = "False"  // ✅ ปิด host key checking
     }
 
     stages {
@@ -13,6 +13,16 @@ pipeline {
                     set -ex
                     . ~/ansible-azure-env/bin/activate
                     ansible-playbook playbooks/create-linux-vm-02.yaml
+                '''
+            }
+        }
+
+        stage('Open Port 80') {
+            steps {
+                sh '''
+                    set -ex
+                    . ~/ansible-azure-env/bin/activate
+                    ansible-playbook playbooks/open-port-80.yaml
                 '''
             }
         }
