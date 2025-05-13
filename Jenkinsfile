@@ -21,8 +21,18 @@ pipeline {
             steps {
                 sh '''
                     set -ex
-                    . ~/ansible-azure-env/bin/activate
-                    ansible-playbook playbooks/open-port-80.yaml
+                    az network nsg rule create \
+                      --resource-group rgUbuntuSoutheastAsia \
+                      --nsg-name nicDockerDemo01 \
+                      --name AllowHTTP \
+                      --protocol Tcp \
+                      --direction Inbound \
+                      --priority 1002 \
+                      --source-address-prefix '*' \
+                      --source-port-range '*' \
+                      --destination-address-prefix '*' \
+                      --destination-port-range 8080 \
+                      --access Allow || true
                 '''
             }
         }
