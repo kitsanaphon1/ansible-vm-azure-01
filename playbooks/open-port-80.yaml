@@ -1,5 +1,4 @@
-# playbooks/open-port-80.yaml
-- name: "Open port 80 on existing NSG"
+- name: "Open HTTP Port 80 on existing NSG"
   hosts: localhost
   connection: local
   collections:
@@ -7,10 +6,10 @@
 
   tasks:
     - name: "Allow HTTP (port 80)"
-      azure_rm_securityrule:
+      azure.azcollection.azure_rm_securityrule:
         name: AllowHTTP
         resource_group: rgUbuntuSoutheastAsia
-        security_group_name: nsgDockerDemo01   # 👈 ระบุ NSG ที่ผูกอยู่กับ NIC แล้ว
+        security_group_name: nicDockerDemo01
         access: Allow
         direction: Inbound
         protocol: Tcp
@@ -19,3 +18,4 @@
         source_port_range: "*"
         destination_address_prefix: "*"
         destination_port_range: "80"
+        state: present
