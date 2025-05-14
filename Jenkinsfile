@@ -40,6 +40,8 @@ pipeline {
               '''
             } else {
               echo "🚀 DESTROY_MODE = false → สร้าง VM และตรวจสอบ Docker"
+
+              // ▶ สร้าง VM
               sh '''
                 set -ex
                 export ANSIBLE_HOST_KEY_CHECKING=False
@@ -47,18 +49,24 @@ pipeline {
                 ansible-playbook playbooks/create-linux-vm-02.yaml
               '''
 
+              // ▶ Get IP
               sh '''
                 set -ex
                 export ANSIBLE_HOST_KEY_CHECKING=False
                 . $ANSIBLE_ENV_PATH/bin/activate
                 ansible-playbook playbooks/get-vm-ip.yaml -e "output_file=vm_ip.txt"
+                echo "📦 Public IP address:"
+                cat vm_ip.txt
               '''
 
+              // ▶ SSH เข้าไปตรวจ Docker
               sh '''
                 set -ex
                 export ANSIBLE_HOST_KEY_CHECKING=False
+                IP=$(cat vm_ip.txt)
+                echo "🔍 Connecting to VM: $IP"
                 . $ANSIBLE_ENV_PATH/bin/activate
-                ansible-playbook -i "$(cat vm_ip.txt)," \
+                ansible-playbook -i "$IP," \
                   -u azureuser --private-key ${SSH_KEY} \
                   playbooks/verify-docker.yaml
               '''
