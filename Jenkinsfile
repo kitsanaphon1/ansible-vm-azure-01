@@ -21,6 +21,13 @@ pipeline {
   }
 
   stages {
+    stage('Clean Workspace') {
+      steps {
+        echo "🧹 กำลังล้าง workspace เก่า..."
+        cleanWs()
+      }
+    }
+
     stage('Provision or Destroy') {
       steps {
         withCredentials([
@@ -63,7 +70,7 @@ pipeline {
               sh '''
                 set -ex
                 export ANSIBLE_HOST_KEY_CHECKING=False
-                IP=$(cat vm_ip.txt | tr -d '\r')
+                IP=$(cat vm_ip.txt | tr -d '\\r')
                 echo "🔍 Connecting to VM: $IP"
                 . $ANSIBLE_ENV_PATH/bin/activate
                 ansible-playbook -i "$IP," \

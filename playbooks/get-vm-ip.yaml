@@ -15,7 +15,7 @@
       debug:
         var: ip_info
 
-    - name: Save IP to file
+    - name: Save IP to file (เขียนไว้ใน Jenkins workspace โดยตรง)
       copy:
         content: "{{ ip_info.azure_publicipaddresses[0].ip_address | default('') }}"
-        dest: vm_ip.txt
+        dest: "{{ lookup('env', 'WORKSPACE') | default('./') }}/vm_ip.txt"
