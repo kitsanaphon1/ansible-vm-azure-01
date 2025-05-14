@@ -1,16 +1,15 @@
-- name: Get Public IP of VM
-  hosts: localhost
-  connection: local
-  gather_facts: no
-  tasks:
-    - name: Get public IP info
-      azure.azcollection.azure_rm_publicipaddress_info:
-        resource_group: rgUbuntuSoutheastAsia
-        name: pipDockerDemo01
-        auth_source: env     # ต้องมี
-      register: ip_info
+- name: Get public IP info
+  azure.azcollection.azure_rm_publicipaddress_info:
+    resource_group: rgUbuntuSoutheastAsia
+    name: pipDockerDemo01
+    auth_source: env
+  register: ip_info
 
-    - name: Save IP to file
-      copy:
-        content: "{{ ip_info.azure_publicipaddresses[0].ip_address }}"
-        dest: vm_ip.txt
+- name: Debug IP info
+  debug:
+    var: ip_info
+
+- name: Save IP to file
+  copy:
+    content: "{{ ip_info.azure_publicipaddresses[0].ip_address | default('') }}"
+    dest: vm_ip.txt
