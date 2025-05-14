@@ -7,7 +7,7 @@
       azure.azcollection.azure_rm_publicipaddress_info:
         resource_group: rgUbuntuSoutheastAsia
         name: pipDockerDemo01
-        auth_source: env
+        auth_source: env     # ต้องมี
       register: ip_info
 
     - name: Save IP to file

@@ -8,7 +8,7 @@ pipeline {
   }
 
   stages {
-    stage('Create VM with Docker') {
+    stage('Provision VM and Verify Docker') {
       steps {
         withCredentials([
           string(credentialsId: 'AZURE_CLIENT_ID', variable: 'AZURE_CLIENT_ID'),
@@ -16,34 +16,28 @@ pipeline {
           string(credentialsId: 'AZURE_TENANT', variable: 'AZURE_TENANT'),
           string(credentialsId: 'AZURE_SUBSCRIPTION_ID', variable: 'AZURE_SUBSCRIPTION_ID')
         ]) {
-          sh '''
-            set -ex
-            . $ANSIBLE_ENV_PATH/bin/activate
-            ansible-playbook playbooks/create-linux-vm-02.yaml
-          '''
+          script {
+            sh '''
+              set -ex
+              . $ANSIBLE_ENV_PATH/bin/activate
+              ansible-playbook playbooks/create-linux-vm-02.yaml
+            '''
+
+            sh '''
+              set -ex
+              . $ANSIBLE_ENV_PATH/bin/activate
+              ansible-playbook playbooks/get-vm-ip.yaml -e "output_file=vm_ip.txt"
+            '''
+
+            sh '''
+              set -ex
+              . $ANSIBLE_ENV_PATH/bin/activate
+              ansible-playbook -i "$(cat vm_ip.txt)," \
+                -u azureuser --private-key ${SSH_KEY} \
+                playbooks/verify-docker.yaml
+            '''
+          }
         }
-      }
-    }
-
-    stage('Get Public IP') {
-      steps {
-        sh '''
-          set -ex
-          . $ANSIBLE_ENV_PATH/bin/activate
-          ansible-playbook playbooks/get-vm-ip.yaml -e "output_file=vm_ip.txt"
-        '''
-      }
-    }
-
-    stage('Verify Docker on VM') {
-      steps {
-        sh '''
-          set -ex
-          . $ANSIBLE_ENV_PATH/bin/activate
-          ansible-playbook -i "$(cat vm_ip.txt)," \
-            -u azureuser --private-key ${SSH_KEY} \
-            playbooks/verify-docker.yaml
-        '''
       }
     }
   }
