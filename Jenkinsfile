@@ -12,7 +12,7 @@ pipeline {
   agent { label 'ansible-agent' }
 
   parameters {
-    booleanParam(name: 'DESTROY_MODE', defaultValue: true, description: 'เช็คเพื่อสั่งลบ VM แทนการสร้าง')
+    booleanParam(name: 'DESTROY_MODE', defaultValue: false, description: 'เช็คเพื่อสั่งลบ VM แทนการสร้าง')
   }
 
   environment {
