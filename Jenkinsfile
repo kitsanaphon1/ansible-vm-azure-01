@@ -2,10 +2,8 @@
  * 🔧 Jenkins Pipeline สำหรับจัดการ VM บน Azure ด้วย Ansible
  *
  * ✅ วิธีใช้งาน:
- * 1. รัน Pipeline ปกติ (DESTROY_MODE = false) → จะสร้าง VM + ติดตั้ง Docker + ตรวจสอบ
- * 2. รัน Pipeline โดยตั้ง DESTROY_MODE = true → จะลบ VM เดิมทิ้ง
- *
- * 🚀 เหมาะสำหรับ Dev/Test ที่ต้องการความยืดหยุ่นในการสร้าง-ลบ VM บ่อย ๆ
+ * 1. DESTROY_MODE = false → สร้าง VM + ติดตั้ง Docker + ตรวจสอบ
+ * 2. DESTROY_MODE = true → ลบ VM เดิมทิ้ง
  */
 
 pipeline {
@@ -23,14 +21,14 @@ pipeline {
   stages {
     stage('Clean Workspace') {
       steps {
-        echo "🧹 กำลังล้าง workspace เก่า..."
+        echo "🧹 ล้าง workspace..."
         cleanWs()
       }
     }
 
     stage('Checkout Source') {
       steps {
-        echo "📥 กำลังดึง source code จาก Git..."
+        echo "📥 ดึง source code จาก Git..."
         checkout scm
       }
     }
@@ -63,22 +61,33 @@ pipeline {
                 ansible-playbook playbooks/create-linux-vm-02.yaml
               '''
 
-              // ▶ 2. Get Public IP และตรวจสอบ
+              // ▶ 2. ดึง Public IP และบันทึกลง workspace
               sh '''
                 set -ex
                 export ANSIBLE_HOST_KEY_CHECKING=False
                 . $ANSIBLE_ENV_PATH/bin/activate
                 ansible-playbook playbooks/get-vm-ip.yaml -e "output_file=vm_ip.txt"
-                echo "📦 Public IP address:"
+                echo "📄 ตรวจ vm_ip.txt:"
                 cat vm_ip.txt | hexdump -C
               '''
 
-              // ▶ 3. ใช้ IP ที่ได้ SSH เข้าไปเช็ก Docker
+              // ▶ 3. อ่าน IP แบบปลอดภัยและ SSH ไปเช็ก Docker
               sh '''
                 set -ex
                 export ANSIBLE_HOST_KEY_CHECKING=False
-                IP=$(cat vm_ip.txt | tr -d '\\r')
-                echo "🔍 Connecting to VM: $IP"
+
+                if [ ! -s vm_ip.txt ]; then
+                  echo "❌ vm_ip.txt ว่างหรือไม่ถูกเขียน!"
+                  exit 1
+                fi
+
+                IP=$(cat vm_ip.txt | tr -d '\\r\\n')
+                if [ -z "$IP" ]; then
+                  echo "❌ ไม่พบ IP ในไฟล์ vm_ip.txt"
+                  exit 1
+                fi
+
+                echo "🌐 Connecting to VM: $IP"
                 . $ANSIBLE_ENV_PATH/bin/activate
                 ansible-playbook -i "$IP," \
                   -u azureuser --private-key ${SSH_KEY} \

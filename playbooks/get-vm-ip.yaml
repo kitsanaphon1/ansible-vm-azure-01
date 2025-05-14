@@ -15,7 +15,12 @@
       debug:
         var: ip_info
 
+    - name: Fail if no public IP found
+      fail:
+        msg: "❌ ไม่พบ IP จาก Azure หรือข้อมูลว่าง"
+      when: ip_info.azure_publicipaddresses | length == 0
+
     - name: Save IP to file (เขียนไว้ใน Jenkins workspace โดยตรง)
       copy:
-        content: "{{ ip_info.azure_publicipaddresses[0].ip_address | default('') }}"
+        content: "{{ ip_info.azure_publicipaddresses[0].ip_address }}"
         dest: "{{ lookup('env', 'WORKSPACE') | default('./') }}/vm_ip.txt"
