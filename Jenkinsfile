@@ -12,13 +12,12 @@ pipeline {
   agent { label 'ansible-agent' }
 
   parameters {
-    booleanParam(name: 'DESTROY_MODE', defaultValue: false, description: 'เช็คเพื่อสั่งลบ VM แทนการสร้าง')
+    booleanParam(name: 'DESTROY_MODE', defaultValue: false, description: 'ติ๊กเพื่อสั่งลบ VM แทนการสร้าง')
   }
 
   environment {
     SSH_KEY = "~/.ssh/id_rsa"
     ANSIBLE_ENV_PATH = "/var/lib/jenkins/ansible-azure-env"
-    ANSIBLE_HOST_KEY_CHECKING = "False"
   }
 
   stages {
@@ -35,6 +34,7 @@ pipeline {
               echo "🔥 DESTROY_MODE = true → ลบ VM"
               sh '''
                 set -ex
+                export ANSIBLE_HOST_KEY_CHECKING=False
                 . $ANSIBLE_ENV_PATH/bin/activate
                 ansible-playbook playbooks/destroy-linux-vm.yaml
               '''
@@ -42,18 +42,21 @@ pipeline {
               echo "🚀 DESTROY_MODE = false → สร้าง VM และตรวจสอบ Docker"
               sh '''
                 set -ex
+                export ANSIBLE_HOST_KEY_CHECKING=False
                 . $ANSIBLE_ENV_PATH/bin/activate
                 ansible-playbook playbooks/create-linux-vm-02.yaml
               '''
 
               sh '''
                 set -ex
+                export ANSIBLE_HOST_KEY_CHECKING=False
                 . $ANSIBLE_ENV_PATH/bin/activate
                 ansible-playbook playbooks/get-vm-ip.yaml -e "output_file=vm_ip.txt"
               '''
 
               sh '''
                 set -ex
+                export ANSIBLE_HOST_KEY_CHECKING=False
                 . $ANSIBLE_ENV_PATH/bin/activate
                 ansible-playbook -i "$(cat vm_ip.txt)," \
                   -u azureuser --private-key ${SSH_KEY} \
