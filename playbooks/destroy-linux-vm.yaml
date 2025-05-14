@@ -1,0 +1,12 @@
+- name: Destroy VM only
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - name: Delete virtual machine only
+      azure.azcollection.azure_rm_virtualmachine:
+        name: vmDockerDemo01
+        resource_group: rgUbuntuSoutheastAsia
+        state: absent
+        auth_source: env
