@@ -28,6 +28,13 @@ pipeline {
       }
     }
 
+    stage('Checkout Source') {
+      steps {
+        echo "📥 กำลังดึง source code จาก Git..."
+        checkout scm
+      }
+    }
+
     stage('Provision or Destroy') {
       steps {
         withCredentials([
