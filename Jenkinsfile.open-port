@@ -1,30 +1,16 @@
 /**
  * 🔐 Jenkins Pipeline: เปิดพอร์ต HTTP/HTTPS (80/443) บน Azure NSG ด้วย Azure CLI ผ่าน Ansible
  *
- * ✅ วิธีใช้งาน:
- * - กรอกชื่อ Resource Group และชื่อ NSG ที่คุณต้องการเปิดพอร์ต
- * - ระบบจะรัน playbook เพื่อเปิดพอร์ต 80/443 ใน NSG ดังกล่าว
- * - ถ้าพอร์ตถูกเปิดอยู่แล้ว จะไม่สร้างซ้ำ
+ * 🛠️ ค่ากำหนดไว้ใน Jenkinsfile นี้เลย ไม่ต้องกรอกตอนรัน
  */
 
 pipeline {
   agent { label 'ansible-agent' }
 
-  parameters {
-    string(
-      name: 'RESOURCE_GROUP',
-      defaultValue: 'rgUbuntuSoutheastAsia',
-      description: '🔹 ชื่อของ Resource Group ที่ใช้ใน Azure (ตัวอย่าง: rgUbuntuSoutheastAsia)'
-    )
-    string(
-      name: 'NSG_NAME',
-      defaultValue: 'nicDockerDemo01',
-      description: '🔹 ชื่อของ Network Security Group (NSG) ที่ต้องการเปิดพอร์ต (ตัวอย่าง: nicDockerDemo01)'
-    )
-  }
-
   environment {
     ANSIBLE_ENV_PATH = "/var/lib/jenkins/ansible-azure-env"
+    RESOURCE_GROUP   = "rgUbuntuSoutheastAsia"   // ✅ แก้ชื่อ RG ตรงนี้ได้เลย
+    NSG_NAME         = "nicDockerDemo01"         // ✅ แก้ชื่อ NSG ตรงนี้ได้เลย
   }
 
   stages {
