@@ -2,8 +2,10 @@
   hosts: localhost
   connection: local
   gather_facts: no
+
   tasks:
 
+    # ====== HTTP ======
     - name: ตรวจว่า rule Allow-HTTP มีอยู่หรือไม่
       shell: |
         az network nsg rule list \
@@ -14,13 +16,27 @@
       register: http_rule
       changed_when: false
 
+    - name: ตรวจว่า priority 1001 ถูกใช้แล้วหรือยัง (สำหรับ HTTP)
+      shell: |
+        az network nsg rule list \
+          --resource-group {{ resource_group }} \
+          --nsg-name {{ nsg_name }} \
+          --query "[?priority==1001]" \
+          --output tsv
+      register: http_priority_check
+      changed_when: false
+
+    - name: กำหนด priority ให้ HTTP rule อัตโนมัติ
+      set_fact:
+        http_priority: "{{ '1101' if http_priority_check.stdout != '' else '1001' }}"
+
     - name: สร้าง rule HTTP ถ้ายังไม่มี
       shell: |
         az network nsg rule create \
           --resource-group {{ resource_group }} \
           --nsg-name {{ nsg_name }} \
           --name Allow-HTTP \
-          --priority 1001 \
+          --priority {{ http_priority }} \
           --access Allow \
           --direction Inbound \
           --protocol Tcp \
@@ -34,6 +50,7 @@
         AZURE_SECRET: "{{ lookup('env','AZURE_SECRET') }}"
         AZURE_TENANT: "{{ lookup('env','AZURE_TENANT') }}"
 
+    # ====== HTTPS ======
     - name: ตรวจว่า rule Allow-HTTPS มีอยู่หรือไม่
       shell: |
         az network nsg rule list \
@@ -44,13 +61,27 @@
       register: https_rule
       changed_when: false
 
+    - name: ตรวจว่า priority 1002 ถูกใช้แล้วหรือยัง (สำหรับ HTTPS)
+      shell: |
+        az network nsg rule list \
+          --resource-group {{ resource_group }} \
+          --nsg-name {{ nsg_name }} \
+          --query "[?priority==1002]" \
+          --output tsv
+      register: https_priority_check
+      changed_when: false
+
+    - name: กำหนด priority ให้ HTTPS rule อัตโนมัติ
+      set_fact:
+        https_priority: "{{ '1102' if https_priority_check.stdout != '' else '1002' }}"
+
     - name: สร้าง rule HTTPS ถ้ายังไม่มี
       shell: |
         az network nsg rule create \
           --resource-group {{ resource_group }} \
           --nsg-name {{ nsg_name }} \
           --name Allow-HTTPS \
-          --priority 1002 \
+          --priority {{ https_priority }} \
           --access Allow \
           --direction Inbound \
           --protocol Tcp \
