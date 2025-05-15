@@ -1,0 +1,65 @@
+- name: เปิดพอร์ต 80 และ 443 บน Azure NSG ด้วย Azure CLI
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+
+    - name: ตรวจว่า rule Allow-HTTP มีอยู่หรือไม่
+      shell: |
+        az network nsg rule list \
+          --resource-group {{ resource_group }} \
+          --nsg-name {{ nsg_name }} \
+          --query "[?name=='Allow-HTTP']" \
+          --output tsv
+      register: http_rule
+      changed_when: false
+
+    - name: สร้าง rule HTTP ถ้ายังไม่มี
+      shell: |
+        az network nsg rule create \
+          --resource-group {{ resource_group }} \
+          --nsg-name {{ nsg_name }} \
+          --name Allow-HTTP \
+          --priority 1001 \
+          --access Allow \
+          --direction Inbound \
+          --protocol Tcp \
+          --destination-port-range 80 \
+          --source-address-prefix '*' \
+          --destination-address-prefix '*'
+      when: http_rule.stdout == ""
+      environment:
+        AZURE_SUBSCRIPTION_ID: "{{ lookup('env','AZURE_SUBSCRIPTION_ID') }}"
+        AZURE_CLIENT_ID: "{{ lookup('env','AZURE_CLIENT_ID') }}"
+        AZURE_SECRET: "{{ lookup('env','AZURE_SECRET') }}"
+        AZURE_TENANT: "{{ lookup('env','AZURE_TENANT') }}"
+
+    - name: ตรวจว่า rule Allow-HTTPS มีอยู่หรือไม่
+      shell: |
+        az network nsg rule list \
+          --resource-group {{ resource_group }} \
+          --nsg-name {{ nsg_name }} \
+          --query "[?name=='Allow-HTTPS']" \
+          --output tsv
+      register: https_rule
+      changed_when: false
+
+    - name: สร้าง rule HTTPS ถ้ายังไม่มี
+      shell: |
+        az network nsg rule create \
+          --resource-group {{ resource_group }} \
+          --nsg-name {{ nsg_name }} \
+          --name Allow-HTTPS \
+          --priority 1002 \
+          --access Allow \
+          --direction Inbound \
+          --protocol Tcp \
+          --destination-port-range 443 \
+          --source-address-prefix '*' \
+          --destination-address-prefix '*'
+      when: https_rule.stdout == ""
+      environment:
+        AZURE_SUBSCRIPTION_ID: "{{ lookup('env','AZURE_SUBSCRIPTION_ID') }}"
+        AZURE_CLIENT_ID: "{{ lookup('env','AZURE_CLIENT_ID') }}"
+        AZURE_SECRET: "{{ lookup('env','AZURE_SECRET') }}"
+        AZURE_TENANT: "{{ lookup('env','AZURE_TENANT') }}"

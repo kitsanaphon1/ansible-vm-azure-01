@@ -1,0 +1,52 @@
+/**
+ * 🔐 Jenkins Pipeline: เปิดพอร์ต HTTP/HTTPS (80/443) บน Azure NSG ด้วย Azure CLI ผ่าน Ansible
+ */
+
+pipeline {
+  agent { label 'ansible-agent' }
+
+  parameters {
+    string(name: 'rgUbuntuSoutheastAsia', defaultValue: 'rgMyApp', description: 'ชื่อ Resource Group ที่ใช้')
+    string(name: 'nicDockerDemo01', defaultValue: 'nsgMyVM', description: 'ชื่อ Network Security Group ที่จะเปิดพอร์ต')
+  }
+
+  environment {
+    ANSIBLE_ENV_PATH = "/var/lib/jenkins/ansible-azure-env"
+  }
+
+  stages {
+    stage('Clean Workspace') {
+      steps {
+        echo "🧹 ล้าง workspace..."
+        cleanWs()
+      }
+    }
+
+    stage('Checkout Source') {
+      steps {
+        echo "📥 ดึง source code จาก Git..."
+        checkout scm
+      }
+    }
+
+    stage('Open Ports 80/443') {
+      steps {
+        withCredentials([
+          string(credentialsId: 'AZURE_CLIENT_ID', variable: 'AZURE_CLIENT_ID'),
+          string(credentialsId: 'AZURE_SECRET', variable: 'AZURE_SECRET'),
+          string(credentialsId: 'AZURE_TENANT', variable: 'AZURE_TENANT'),
+          string(credentialsId: 'AZURE_SUBSCRIPTION_ID', variable: 'AZURE_SUBSCRIPTION_ID')
+        ]) {
+          echo "🌐 เปิดพอร์ต 80/443 ที่ NSG: ${NSG_NAME} ใน Resource Group: ${RESOURCE_GROUP}"
+          sh '''
+            set -ex
+            export ANSIBLE_HOST_KEY_CHECKING=False
+            . $ANSIBLE_ENV_PATH/bin/activate
+            ansible-playbook playbooks/open-port-cli.yaml \
+              -e "resource_group=${RESOURCE_GROUP} nsg_name=${NSG_NAME}"
+          '''
+        }
+      }
+    }
+  }
+}
