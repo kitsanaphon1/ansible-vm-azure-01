@@ -1,5 +1,5 @@
 /**
- * 🔧 Jenkins Pipeline สำหรับจัดการ VM บน Azure ด้วย Ansible
+ * 🔧 Jenkins Pipeline สำหรับจัดการ VM + Docker + Compose บน Azure ด้วย Ansible
  *
  * ✅ วิธีใช้งาน:
  * 1. DESTROY_MODE = false → สร้าง VM + ติดตั้ง Docker + Deploy ด้วย Docker Compose
@@ -56,25 +56,20 @@ pipeline {
               // ▶ 1. สร้าง VM
               sh '''
                 set -ex
-                export ANSIBLE_HOST_KEY_CHECKING=False
                 . $ANSIBLE_ENV_PATH/bin/activate
                 ansible-playbook playbooks/create-linux-vm-02.yaml
               '''
 
-              // ▶ 2. ดึง Public IP และบันทึกลง workspace
+              // ▶ 2. ดึง Public IP
               sh '''
                 set -ex
-                export ANSIBLE_HOST_KEY_CHECKING=False
                 . $ANSIBLE_ENV_PATH/bin/activate
                 ansible-playbook playbooks/get-vm-ip.yaml -e "output_file=vm_ip.txt"
-                echo "📄 ตรวจ vm_ip.txt:"
-                cat vm_ip.txt | hexdump -C
               '''
 
-              // ▶ 3. อ่าน IP แบบปลอดภัยและ Deploy Compose
+              // ▶ 3. อ่าน IP และตรวจสอบ
               sh '''
                 set -ex
-                export ANSIBLE_HOST_KEY_CHECKING=False
 
                 if [ ! -s vm_ip.txt ]; then
                   echo "❌ vm_ip.txt ว่างหรือไม่ถูกเขียน!"
@@ -89,6 +84,13 @@ pipeline {
 
                 echo "🌐 Connecting to VM: $IP"
                 . $ANSIBLE_ENV_PATH/bin/activate
+
+                # ▶ 4. ติดตั้ง + ตรวจสอบ Docker
+                ansible-playbook -i "$IP," \
+                  -u azureuser --private-key ${SSH_KEY} \
+                  playbooks/verify-docker.yaml
+
+                # ▶ 5. Deploy Compose
                 ansible-playbook -i "$IP," \
                   -u azureuser --private-key ${SSH_KEY} \
                   playbooks/deploy-compose.yaml

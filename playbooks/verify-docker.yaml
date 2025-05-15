@@ -1,4 +1,4 @@
-- name: Ensure Docker is installed on VM
+- name: Install and Verify Docker on VM
   hosts: all
   become: true
   gather_facts: no
@@ -9,23 +9,11 @@
       wait_for_connection:
         timeout: 300
 
-    - name: Check Docker version
-      command: docker --version
-      register: docker_result
-      ignore_errors: true
-      failed_when: false  # ✅ ป้องกัน task ล้มเมื่อไม่พบ docker
-
-    - name: Show Docker version (if available)
-      debug:
-        var: docker_result.stdout
-      when: docker_result.rc == 0
-
-    - name: Install Docker if not present
+    - name: Install Docker (always run)
       shell: |
         curl -fsSL https://get.docker.com -o get-docker.sh
         sh get-docker.sh
         usermod -aG docker azureuser
-      when: docker_result.rc != 0
       args:
         executable: /bin/bash
 
@@ -33,6 +21,7 @@
       command: docker --version
       register: docker_check_after
       changed_when: false
+      failed_when: false  # ป้องกัน playbook ล้มทันที ถ้าติดตั้งไม่สมบูรณ์
 
     - name: Show Docker version after install
       debug:
