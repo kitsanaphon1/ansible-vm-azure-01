@@ -1,0 +1,44 @@
+- name: Verify Docker and Deploy with Compose
+  hosts: all
+  become: true
+  tasks:
+
+    - name: Check if Docker is installed
+      shell: docker --version
+      register: docker_check
+      failed_when: docker_check.rc != 0
+      changed_when: false
+
+    - name: Check Docker service is running
+      service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Ensure Docker Compose is installed
+      shell: |
+        curl -SL https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
+        chmod +x /usr/local/bin/docker-compose
+      args:
+        executable: /bin/bash
+      ignore_errors: true
+
+    - name: Create deploy directory (if needed)
+      file:
+        path: /home/azureuser/deploy
+        state: directory
+        owner: azureuser
+        mode: '0755'
+
+    - name: Copy docker-compose.yml to VM
+      copy:
+        src: ../docker-compose/docker-compose.yml
+        dest: /home/azureuser/deploy/docker-compose.yml
+        owner: azureuser
+        mode: '0644'
+
+    - name: Run Docker Compose
+      shell: docker compose -f docker-compose.yml up -d
+      args:
+        chdir: /home/azureuser/deploy
+        executable: /bin/bash
