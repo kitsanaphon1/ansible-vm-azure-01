@@ -4,6 +4,7 @@
   gather_facts: no
 
   tasks:
+
     - name: Wait for SSH connection (max 5 minutes)
       wait_for_connection:
         timeout: 300
@@ -16,8 +17,32 @@
     - name: Show Docker version (if available)
       debug:
         var: docker_result.stdout
+      when: docker_result.rc == 0
 
-    - name: Fail if Docker is not installed
-      fail:
-        msg: "❌ Docker is not installed or not in PATH."
+    - name: Install Docker if not present
+      shell: |
+        curl -fsSL https://get.docker.com -o get-docker.sh
+        sh get-docker.sh
+        usermod -aG docker azureuser
       when: docker_result.rc != 0
+      args:
+        executable: /bin/bash
+
+    - name: Reload shell (for docker group to take effect)
+      shell: newgrp docker
+      when: docker_result.rc != 0
+      ignore_errors: true
+
+    - name: Re-check Docker version after install
+      command: docker --version
+      register: docker_check_after
+      changed_when: false
+
+    - name: Show Docker version after install
+      debug:
+        var: docker_check_after.stdout
+
+    - name: Fail if Docker still not installed
+      fail:
+        msg: "❌ Docker installation failed. Please check manually."
+      when: docker_check_after.rc != 0
