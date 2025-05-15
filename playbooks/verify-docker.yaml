@@ -1,4 +1,4 @@
-- name: Check Docker installation on VM
+- name: Ensure Docker is installed on VM
   hosts: all
   become: true
   gather_facts: no
@@ -13,6 +13,7 @@
       command: docker --version
       register: docker_result
       ignore_errors: true
+      failed_when: false  # ✅ ป้องกัน task ล้มเมื่อไม่พบ docker
 
     - name: Show Docker version (if available)
       debug:
@@ -27,11 +28,6 @@
       when: docker_result.rc != 0
       args:
         executable: /bin/bash
-
-    - name: Reload shell (for docker group to take effect)
-      shell: newgrp docker
-      when: docker_result.rc != 0
-      ignore_errors: true
 
     - name: Re-check Docker version after install
       command: docker --version

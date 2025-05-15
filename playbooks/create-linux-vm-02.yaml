@@ -39,7 +39,7 @@
         state: present
         auth_source: env
 
-    - name: "Create new VM with Docker installed"
+    - name: "Create new VM"
       azure_rm_virtualmachine:
         name: vmDockerDemo01
         resource_group: rgUbuntuSoutheastAsia
@@ -57,12 +57,5 @@
           publisher: Canonical
           sku: 20_04-lts
           version: latest
-        custom_data: |
-          #!/bin/bash
-          apt-get update -y
-          apt-get install -y curl
-          curl -fsSL https://get.docker.com -o get-docker.sh
-          sh get-docker.sh
-          usermod -aG docker azureuser
         state: present
         auth_source: env
