@@ -2,16 +2,22 @@
   hosts: all
   become: true
   gather_facts: no
+
   tasks:
-    - name: Wait for SSH
+    - name: Wait for SSH connection (max 5 minutes)
       wait_for_connection:
         timeout: 300
 
     - name: Check Docker version
       command: docker --version
       register: docker_result
-      ignore_errors: yes
+      ignore_errors: true
 
-    - name: Show Docker version
+    - name: Show Docker version (if available)
       debug:
         var: docker_result.stdout
+
+    - name: Fail if Docker is not installed
+      fail:
+        msg: "❌ Docker is not installed or not in PATH."
+      when: docker_result.rc != 0
